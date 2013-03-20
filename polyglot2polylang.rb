@@ -52,6 +52,14 @@
 # @todo There is a bug in te WXR export: when the post's or page's title is multilanguage, it is exported as the
 #   first language version instead (the same as it's shown in the WordPress backend). So, no <lang_xx> tags appear
 #   inside the <title> tag in exported WXR files. Which means, title translations get lost in this process.
+# @todo Add that this script will also generate language-specific copies of all categories and tags, and assign posts
+#   to the proper language versions of these only. Until this is implemented, polylang-localize-tags.rb provides a
+#   workaround. Currently, categories and tags are left unchanged, and have to be assigned to the default language (in
+#   the Polylang settings screen) )to make them visible when editing a post. The problem is that they are not
+#   translated then, and will disappear from "wrong language" posts and pages when editing them.
+# @todo Fix the Polylang (or rather, Wordpress) bug that term metadata (from table wp_termsmeta), like language
+#   identifiers and links to translations for categories and tags, are not saved in WXR exports. For that reason,
+#   this script currently has to create SQL files to attach this information to terms.
 # @todo Fix that newlines are missing in the output file, before tags created programmatically. Might be a bug in the
 #   Nokogiri write_to()) function? For now, the workaround is to use "xmllint --format infile.xml > outfile.xml".
 
@@ -87,6 +95,9 @@ wxr_doc = Nokogiri::XML(File.open(wxr_infile))
 
 # Next free unique ID of a WordPress post that can be assigned.
 next_post_id = ARGV[2].to_i
+
+# Next free unique ID of a WordPress term that can be assigned.
+next_term_id = ARGV[3].to_i
 
 # Map to store translations of old post IDs to new (language dependent) ones. Access is via [id]['en'] and [id]['it'].
 item_id_map = Hash.new
